@@ -607,17 +607,17 @@ public class Util {
 		PrintWriter writer;
 		FileWriter fr;
 		String objectName = tableName.substring(tableName.indexOf("_")+1);
-		String directoryPath = path + "/" + objectName + "/"; 
+		String directoryPath = path + "/jsp/" + objectName + "/"; 
 		int listField = 3;
 		String jspPath = null;
 		createDirectory(directoryPath);
 		String className = objectName.substring(0,1).toUpperCase() +  objectName.substring(1);
-		File classFile = new File(jspPath);
-		if(classFile.exists()) classFile.delete();
 		try{
 			
 			/*List*/
 			jspPath = directoryPath + "list.jsp";
+			File classFile = new File(jspPath);
+			if(classFile.exists()) classFile.delete();
 			fr = new FileWriter(jspPath,true);
 			writer = new PrintWriter(fr);
 			writer.println("<%@page contentType=\"text/html\" pageEncoding=\"UTF-8\"%>");
@@ -684,69 +684,98 @@ public class Util {
 			writer.println("</script>");
 			writer.close();
 			
-			/*Insert*/
+			/*Form Insert*/
 			jspPath = directoryPath + "insert.jsp";
+			classFile = new File(jspPath);
+			if(classFile.exists()) classFile.delete();
 			fr = new FileWriter(jspPath,true);
 			writer = new PrintWriter(fr);
 			writer.println("<%@page contentType=\"text/html\" pageEncoding=\"UTF-8\"%>");
 			writer.println("<%@ taglib uri=\"http://java.sun.com/jsp/jstl/core\" prefix=\"c\" %>");
 			writer.println("<!DOCTYPE html>");
-			writer.println("<h3>" + className + "</h3>");
-			writer.println("<div class=\"row\">");
-			writer.println("\t<div class=\"col-lg-2\"></div>");
-			writer.println("\t<div class=\"col-lg-8\">");
-			writer.println("\t\t<table class=\"table table-bordered table-striped\">");
-			writer.println("\t\t\t<tr>");
+			writer.println("<form class=\"form-horizontal\">");
+			writer.println("\t<input type=\"hidden\" name=\"action\" value=\"insert\"/>");
 			
-			for(int i = 1;i<listField;i++){
+			for(int i = 1;i<list.size();i++){
 				String[] item = list.get(i);
 				String attrUpper = item[0].substring(0, 1).toUpperCase() + item[0].substring(1);
-				writer.println("\t\t\t\t<th>" + attrUpper + "</th>");
+				writer.println("\t<div class=\"form-group\">");
+				writer.println("\t\t<label for=\"" + item[0] + "\" class=\"col-sm-4 control-label\">" + attrUpper + "</label>");
+				writer.println("\t\t<div class=\"col-sm-8\">");
+				writer.println("\t\t\t<input type=\"text\" class=\"form-control\" name=\"" + convertToParameter(item[0]) + "\" id=\"" + item[0] + "\" placeholder=\"" + attrUpper + "\">");
+				writer.println("\t\t</div>");
+				writer.println("\t</div>");
 			}
 			
-			writer.println("\t\t\t\t<th style=\"text-align: center\">");
-			writer.println("\t\t\t\t\t<button type=\"button\" class=\"btn btn-default edit-difficulty\" id=\"add-" + objectName + "\" title=\"agregar\">");
-			writer.println("\t\t\t\t\t\t<span class=\"glyphicon glyphicon-plus\"/>");
-			writer.println("\t\t\t\t\t</button>");
-			writer.println("\t\t\t\t</th>");
-			writer.println("\t\t\t</tr>");
-			writer.println("\t\t\t<c:forEach items=\"${list}\" var=\"list\">");
-			writer.println("\t\t\t\t<tr id=\"${list." + list.get(0)[0] + "}\">");
+			writer.println("\t<div class=\"alert\"/>");
+			writer.println("</form>");
 			
-			for(int i = 1;i<listField;i++){
-				String[] item = list.get(i);
-				writer.println("\t\t\t\t\t<td>${list." + item[0] + "}</td>");
-			}
-			writer.println("\t\t\t\t\t<td align=\"center\">");
-			writer.println("\t\t\t\t\t\t<button type=\"button\" class=\"btn btn-default edit-" + objectName + "\" title=\"editar\">");
-			writer.println("\t\t\t\t\t\t\t<span class=\"glyphicon glyphicon-edit\"/>");
-			writer.println("\t\t\t\t\t\t</button>");
-			writer.println("\t\t\t\t\t</td>");
-			writer.println("\t\t\t\t</tr>");
-			writer.println("\t\t\t</c:forEach>");
-			writer.println("\t\t</table>");
-			writer.println("\t</div>");
-			writer.println("\t<div class=\"col-lg-2\"></div>");
-			writer.println("</div>");
-			writer.println("");
-			
+			    
 			writer.println("<script>");
-			writer.println("\tvar myModalId='myModalSm';");
+			writer.println("\tvar controller = '" + objectName + ".htm';");
+			writer.println("\tvar modalId = 'myModalSm';");
 			writer.println("\t$(function(){");
-			writer.println("\t\t$('#add-difficulty').click(function(){");
-			writer.println("\t\t\t$('#' + myModalId + ' .modal-title').html('Agregar');");
-			writer.println("\t\t\t$.post('difficulty.htm',{action:'form_add'},function(data){");
-			writer.println("\t\t\t\t$('#' + myModalId + ' .modal-body').html(data);");
-			writer.println("\t\t\t\t$('#' + myModalId).modal('show');");
+			writer.println("\t\t$('#' + modalId + ' .btn-primary').unbind('click').click(function(){");
+			writer.println("\t\t\t$.post(controller,$('#' + modalId + ' .form-horizontal').serialize(),function(data){");
+			writer.println("\t\t\t\tif(data==1){");
+			writer.println("\t\t\t\t\t$('#' + modalId + ' .alert').addClass('alert-success').html('Se agrego el nuevo registro');"); 
+			writer.println("\t\t\t\t$.post(controller,{action:'list'},function(data){");
+			writer.println("\t\t\t\t\t$('#mainContainer').html(data);");
+			writer.println("\t\t\t\t\t\t$('#' + modalId).modal('hide');");
+			writer.println("\t\t\t\t\t});");
+			writer.println("\t\t\t\t}else{");
+			writer.println("\t\t\t\t\t$('#myModal .alert').addClass('alert-danger').html(data);");
+			writer.println("\t\t\t\t}");
 			writer.println("\t\t\t});");
 			writer.println("\t\t});");
-		        
-			writer.println("\t\t$('.edit-difficulty').click(function(){");
-			writer.println("\t\t\t$('#' + myModalId + ' .modal-title').html('Editar');");
-			writer.println("\t\t\t$.post('difficulty.htm',{action:'form_upd',difficulty_id:$(this).parent().parent().attr('id')},function(data){");
-			writer.println("\t\t\t\t$('#' + myModalId + ' .modal-body').html(data);");
-			writer.println("\t\t\t\t$('#' + myModalId +).modal('show');");
-			writer.println("\t\t\t}); ");
+			writer.println("\t});");
+			writer.println("</script>");
+			writer.close();
+			
+			/*Form Update*/
+			jspPath = directoryPath + "edit.jsp";
+			classFile = new File(jspPath);
+			if(classFile.exists()) classFile.delete();
+			fr = new FileWriter(jspPath,true);
+			writer = new PrintWriter(fr);
+			writer.println("<%@page contentType=\"text/html\" pageEncoding=\"UTF-8\"%>");
+			writer.println("<%@ taglib uri=\"http://java.sun.com/jsp/jstl/core\" prefix=\"c\" %>");
+			writer.println("<!DOCTYPE html>");
+			writer.println("<form class=\"form-horizontal\">");
+			writer.println("\t<input type=\"hidden\" name=\"action\" value=\"upd\"/>");
+			writer.println("\t<input type=\"hidden\" name=\"" + list.get(0)[0] + "\" value=\"${" + objectName + "." + list.get(0)[0] + "}\"/>");
+			
+			for(int i = 1;i<list.size();i++){
+				String[] item = list.get(i);
+				String attrUpper = item[0].substring(0, 1).toUpperCase() + item[0].substring(1);
+				writer.println("\t<div class=\"form-group\">");
+				writer.println("\t\t<label for=\"" + item[0] + "\" class=\"col-sm-4 control-label\">" + attrUpper + "</label>");
+				writer.println("\t\t<div class=\"col-sm-8\">");
+				writer.println("\t\t\t<input type=\"text\" class=\"form-control\" name=\"" + convertToParameter(item[0]) + "\" id=\"" + item[0] + "\" value=\"${" + objectName + "." + item[0] + "}\" placeholder=\"" + attrUpper + "\">");
+				writer.println("\t\t</div>");
+				writer.println("\t</div>");
+			}
+			
+			writer.println("\t<div class=\"alert\"/>");
+			writer.println("</form>");
+			
+			    
+			writer.println("<script>");
+			writer.println("\tvar controller = '" + objectName + ".htm';");
+			writer.println("\tvar modalId = 'myModalSm';");
+			writer.println("\t$(function(){");
+			writer.println("\t\t$('#' + modalId + ' .btn-primary').unbind('click').click(function(){");
+			writer.println("\t\t\t$.post(controller,$('#' + modalId + ' .form-horizontal').serialize(),function(data){");
+			writer.println("\t\t\t\tif(data==1){");
+			writer.println("\t\t\t\t\t$('#' + modalId + ' .alert').addClass('alert-success').html('El registro ha sido actualizado');"); 
+			writer.println("\t\t\t\t$.post(controller,{action:'list'},function(data){");
+			writer.println("\t\t\t\t\t$('#mainContainer').html(data);");
+			writer.println("\t\t\t\t\t\t$('#' + modalId).modal('hide');");
+			writer.println("\t\t\t\t\t});");
+			writer.println("\t\t\t\t}else{");
+			writer.println("\t\t\t\t\t$('#myModal .alert').addClass('alert-danger').html(data);");
+			writer.println("\t\t\t\t}");
+			writer.println("\t\t\t});");
 			writer.println("\t\t});");
 			writer.println("\t});");
 			writer.println("</script>");
@@ -756,5 +785,38 @@ public class Util {
 			logger.error("",e);
 		}
 		
+	}
+
+	public static void generateBeans(String path, String tableName) {
+		PrintWriter writer;
+		createDirectory(path);
+		String objectName = tableName.substring(tableName.indexOf("_")+1);
+		String className = objectName.substring(0,1).toUpperCase() +  objectName.substring(1);
+		String classPath = path + "applicationContext.xml";
+		try{
+			FileWriter fr = new FileWriter(classPath,true);
+			writer = new PrintWriter(fr);
+			writer.println("\t<!-- " + className + " -->");
+			writer.println("\t<bean class=\"org.mybatis.spring.mapper.MapperFactoryBean\" id=\"" + objectName + "Mapper\">");
+			writer.println("\t\t<property name=\"mapperInterface\" value=\"data.mapper." + className + "Mapper\"/>");
+			writer.println("\t\t<property name=\"sqlSessionFactory\" ref=\"sqlSessionFactory\"/>");
+			writer.println("\t</bean>\n");
+    
+			writer.println("\t<bean class=\"model.dao.impl." + className + "DaoImpl\" id=\"" + objectName + "DaoImpl\">");
+			writer.println("\t\t<property name=\"" + objectName + "Mapper\" ref=\"" + objectName + "Mapper\"/>");
+			writer.println("\t</bean>\n");
+    
+			writer.println("\t<bean class=\"service.impl." + className + "ServiceImpl\" id=\"" + objectName + "ServiceImpl\">");
+			writer.println("\t\t<property name=\"" + objectName + "DaoImpl\" ref=\"" + objectName + "DaoImpl\"/>");
+			writer.println("\t</bean>\n");
+			
+			writer.println("\t<bean class=\"controller." + className + "StatusController\" id=\"" + objectName + "StatusController\">");
+			writer.println("\t\t<property name=\"" + objectName + "ServiceImpl\" ref=\"" + objectName + "ServiceImpl\"/>");
+			writer.println("\t</bean>");
+			
+			writer.close();
+		}catch(Exception e){
+			logger.error("",e);
+		}
 	}
 }

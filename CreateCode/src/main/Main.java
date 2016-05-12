@@ -1,5 +1,6 @@
 package main;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -17,23 +18,23 @@ public class Main {
 		Connection conn = Util.getConnection("67.207.157.112");
 		Statement stmt = null;
 		ResultSet rs = null;
-		Statement stmt2 = null;
-		ResultSet rs2 = null;
 		String pathSrc = "/home/enrique/Documentos/batista/src/";
-		String pathJsp = "/home/enrique/Documentos/batista/jsp/";
+		String pathWeb = "/home/enrique/Documentos/batista/WEB-INF/";
 		
 		try{
+			File file = new File(pathWeb + "/applicationContext.xml");
+			if(file.exists()) file.delete();
 			stmt = conn.createStatement();
-			stmt2 = conn.createStatement();
-			rs = stmt.executeQuery("SHOW FULL TABLES FROM efact");
-			if(rs.next()){
+			
+			String[] tables = {"","",""};
+			for(String table:tables){
 				logger.info(rs.getString(1));
-				rs2 = stmt2.executeQuery("desc " + rs.getString(1));
+				rs = stmt.executeQuery("desc " + table);
 				List<String[]> list = new ArrayList<>();
 				int i = 0;
-				while(rs2.next() && i<10){
+				while(rs.next() && i<10){
 					i++;
-					String[] item = {rs2.getString(1),rs2.getString(2),rs2.getString(4)};
+					String[] item = {rs.getString(1),rs.getString(2),rs.getString(4)};
 					list.add(item);
 				}
 				
@@ -44,7 +45,8 @@ public class Main {
 				Util.createService(pathSrc,rs.getString(1),list);
 				Util.createServiceImpl(pathSrc,rs.getString(1),list);
 				Util.createController(pathSrc,rs.getString(1),list);
-				Util.createJsp(pathJsp,rs.getString(1),list);
+				Util.createJsp(pathWeb,rs.getString(1),list);
+				Util.generateBeans(pathWeb,rs.getString(1));
 			}
 		}catch(Exception e){
 			logger.error("",e);
